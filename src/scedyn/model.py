@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import warnings
 from collections.abc import Sequence
 from copy import deepcopy
 from dataclasses import dataclass, field
@@ -15,6 +16,41 @@ import torch.nn.functional as F
 from .data import LandmarkData
 from .metrics import brier_scores, km_survival
 from .networks import Generator, WeightNetwork
+
+
+def _check_penalty_arguments(variable_selection, lambda_grid, lambda_value) -> None:
+    """Check the penalty arguments against ``variable_selection``."""
+    if not variable_selection:
+        unused = [
+            name
+            for name, value in (
+                ("lambda_grid", lambda_grid),
+                ("lambda_value", lambda_value),
+            )
+            if value is not None
+        ]
+        if unused:
+            msg = (
+                f"{' and '.join(unused)} {'is' if len(unused) == 1 else 'are'} not used "
+                "because variable_selection=False."
+            )
+            warnings.warn(msg, UserWarning, stacklevel=3)
+        return
+    if lambda_grid is None and lambda_value is None:
+        msg = (
+            "variable_selection=True requires lambda_grid (candidate penalty levels "
+            "for the grid search) or lambda_value (a fixed penalty level)."
+        )
+        raise ValueError(msg)
+    if lambda_grid is not None and len(lambda_grid) == 0 and lambda_value is None:
+        msg = "lambda_grid must contain at least one value."
+        raise ValueError(msg)
+    if lambda_grid is not None and lambda_value is not None:
+        msg = (
+            "lambda_grid is ignored because lambda_value is given; variable "
+            "selection uses lambda_value."
+        )
+        warnings.warn(msg, UserWarning, stacklevel=3)
 
 
 def _pick_device(device):
@@ -188,11 +224,18 @@ class SCEDyn:
         validation score.
     variable_selection : bool, default False
         Whether to select variables with stochastic gates.
-    lambda_grid : sequence of float, default (0.40, 0.45, ..., 0.70)
-        Candidate normalized penalty levels; the level with the best validation
-        score is selected.
+    lambda_grid : sequence of float, optional
+        Candidate normalized penalty levels for variable selection; the level
+        with the best validation score is selected. The simulation study of the
+        paper uses ``(0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70)``. With
+        ``variable_selection=True``, ``lambda_grid`` or ``lambda_value`` is
+        required.
     lambda_value : float, optional
-        A fixed normalized penalty level, which skips the grid search.
+        A fixed normalized penalty level for variable selection, on the same
+        scale as ``lambda_grid``, which skips the grid search; for example the
+        level selected by a previous grid search,
+        ``model.selection_.lambda_value``. If both are given, ``lambda_value``
+        is used and ``lambda_grid`` is ignored.
     gate_sigma_baseline : float, default 0.3
         Standard deviation of the gate noise of the baseline covariates.
     gate_sigma_longitudinal : float, default 0.3
@@ -301,7 +344,7 @@ class SCEDyn:
         time_clip: float | None = None,
         # variable selection
         variable_selection: bool = False,
-        lambda_grid: Sequence[float] = (0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70),
+        lambda_grid: Sequence[float] | None = None,
         lambda_value: float | None = None,
         gate_sigma_baseline: float = 0.3,
         gate_sigma_longitudinal: float = 0.3,
@@ -328,6 +371,7 @@ class SCEDyn:
         if censor_mix not in ("mix", "km", "model"):
             msg = "censor_mix must be 'mix', 'km' or 'model'."
             raise ValueError(msg)
+        _check_penalty_arguments(variable_selection, lambda_grid, lambda_value)
         params = dict(locals())
         params.pop("self")
         self.params = params
@@ -984,7 +1028,8 @@ class SCEDyn:
         else:
             ckpt = self._snapshot()
             best: tuple[dict[str, Any], dict[str, Any]] | None = None
-            for lam in self.lambda_grid:
+            grid_values = [] if self.lambda_grid is None else list(self.lambda_grid)
+            for lam in grid_values:
                 actual = lam * k_scale * scale
                 self._restore(ckpt)
                 G.train()

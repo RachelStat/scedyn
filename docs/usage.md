@@ -38,12 +38,15 @@ subject and each time $s$.
 ## Variable selection
 
 ```python
-model = SCEDyn(variable_selection=True, seed=1).fit(train, val)
+grid = (0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70)
+model = SCEDyn(variable_selection=True, lambda_grid=grid, seed=1).fit(train, val)
 model.selected_variables_
 ```
 
-The penalty level is chosen on `lambda_grid` by the validation integrated Brier
-score, or fixed with `lambda_value`.
+With `variable_selection=True`, either `lambda_grid` (candidate penalty levels,
+chosen by the validation integrated Brier score) or `lambda_value` (a fixed
+penalty level on the same scale) is required. If both are given, `lambda_value`
+is used. Without variable selection both are ignored, with a warning.
 
 ## Tuning constants
 

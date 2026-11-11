@@ -62,29 +62,32 @@ S = model.predict_survival(test, times)  # array (n_test, 50)
 The number of visits m_i may differ across subjects. Inputs are used as given,
 so scale them beforehand if their ranges differ widely.
 
-**Variable selection.** With `variable_selection=True` the penalty level is
-chosen on the grid `lambda_grid` by the validation integrated Brier score;
-`lambda_value` fixes it instead.
+**Variable selection.** With `variable_selection=True`, give either
+`lambda_grid`, candidate penalty levels among which the one with the best
+validation integrated Brier score is chosen, or `lambda_value`, a fixed penalty
+level on the same scale. The simulation study of the paper uses the grid 0.40,
+0.45, …, 0.70.
 
 ```python
-model = SCEDyn(variable_selection=True, seed=1).fit(train, val)
+grid = (0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70)
+model = SCEDyn(variable_selection=True, lambda_grid=grid, seed=1).fit(train, val)
 print(model.selected_variables_)  # {'baseline': [...], 'longitudinal': [...]}
+print(model.selection_.lambda_value)  # the chosen level, reusable as lambda_value
 ```
 
 **Tuning.** Every constant of the method is an argument of `SCEDyn`, and the
 defaults are the values of the simulation study (low censoring, landmark 0.9).
 See `help(SCEDyn)` for the full list. The ones most often changed are
 
-| Argument          | Default             | Meaning                                          |
-| ----------------- | ------------------- | ------------------------------------------------ |
-| `embedding_dim`   | 6                   | dimension of the history embedding               |
-| `lstm_hidden_dim` | 216                 | LSTM hidden size                                 |
-| `hidden_dim`      | 128                 | width of the generator head                      |
-| `max_epochs`      | 200                 | number of training epochs                        |
-| `batch_size`      | 16                  | minibatch size                                   |
-| `n_generated`     | 500                 | generated residual times per subject in training |
-| `lambda_grid`     | 0.40, 0.45, …, 0.70 | candidate penalty levels                         |
-| `time_clip`       | None                | upper bound on generated times in validation     |
+| Argument          | Default | Meaning                                          |
+| ----------------- | ------- | ------------------------------------------------ |
+| `embedding_dim`   | 6       | dimension of the history embedding               |
+| `lstm_hidden_dim` | 216     | LSTM hidden size                                 |
+| `hidden_dim`      | 128     | width of the generator head                      |
+| `max_epochs`      | 200     | number of training epochs                        |
+| `batch_size`      | 16      | minibatch size                                   |
+| `n_generated`     | 500     | generated residual times per subject in training |
+| `time_clip`       | None    | upper bound on generated times in validation     |
 
 `model.save(path)` and `SCEDyn.load(path)` store and restore a fitted model.
 
@@ -136,7 +139,8 @@ def run(r, **kwargs):
 
 # main setting: all 54 inputs with variable selection; the penalty level is
 # chosen by grid search in replication 1 and reused in replications 2-20
-fit1, imse1 = run(1, variable_selection=True)
+grid = (0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70)
+fit1, imse1 = run(1, variable_selection=True, lambda_grid=grid)
 lam = fit1.selection_.lambda_value
 scores = [imse1] + [
     run(r, variable_selection=True, lambda_value=lam)[1] for r in range(2, 21)

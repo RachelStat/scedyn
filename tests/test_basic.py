@@ -131,3 +131,24 @@ def test_oracle_is_a_survival_curve():
     assert S.shape == (split.test.n, len(split.eval_grid))
     assert np.all((S >= 0) & (S <= 1 + 1e-9))
     assert imse(S, S) == 0.0
+
+
+def test_penalty_arguments_without_selection_warn():
+    with pytest.warns(UserWarning, match="lambda_grid is not used"):
+        SCEDyn(lambda_grid=(0.5,))
+    with pytest.warns(UserWarning, match="lambda_value is not used"):
+        SCEDyn(lambda_value=0.5)
+    with pytest.warns(UserWarning, match="lambda_grid and lambda_value are not used"):
+        SCEDyn(lambda_grid=(0.5,), lambda_value=0.5)
+
+
+def test_penalty_arguments_with_selection():
+    with pytest.raises(ValueError, match="requires lambda_grid"):
+        SCEDyn(variable_selection=True)
+    with pytest.warns(UserWarning, match="lambda_grid is ignored"):
+        model = SCEDyn(
+            variable_selection=True, lambda_grid=(0.4, 0.5), lambda_value=0.45
+        )
+    assert model.lambda_value == 0.45
+    SCEDyn(variable_selection=True, lambda_grid=(0.5,))
+    SCEDyn(variable_selection=True, lambda_value=0.5)
