@@ -39,10 +39,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/ReneeQRDu/scedyn"
+Homepage = "https://github.com/RachelStat/scedyn"
 Documentation = "https://scedyn.readthedocs.io"
-"Bug Tracker" = "https://github.com/ReneeQRDu/scedyn/issues"
-Changelog = "https://github.com/ReneeQRDu/scedyn/blob/main/CHANGELOG.md"
+"Bug Tracker" = "https://github.com/RachelStat/scedyn/issues"
+Changelog = "https://github.com/RachelStat/scedyn/blob/main/CHANGELOG.md"
 
 [dependency-groups]
 test = ["pytest>=6"]

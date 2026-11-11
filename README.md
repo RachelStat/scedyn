@@ -25,7 +25,7 @@ The package contains
 ## 1. Installation
 
 ```bash
-pip install git+https://github.com/ReneeQRDu/scedyn.git
+pip install git+https://github.com/RachelStat/scedyn.git
 # or, from a local copy
 pip install .
 ```
