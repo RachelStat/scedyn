@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the paper below."
+title: "scedyn: self-consistent estimation for dynamic survival prediction"
+type: software
+license: MIT
+version: 0.1.0
+authors:
+  - family-names: Du
+    given-names: Qiurui
+  - family-names: Kim
+    given-names: Sehwan
+  - family-names: Wang
+    given-names: Rui
+  - family-names: Lu
+    given-names: Wenbin
+preferred-citation:
+  type: article
+  title: "Dynamic prediction via self-consistent estimation"
+  authors:
+    - family-names: Du
+      given-names: Qiurui
+    - family-names: Kim
+      given-names: Sehwan
+    - family-names: Wang
+      given-names: Rui
+    - family-names: Lu
+      given-names: Wenbin

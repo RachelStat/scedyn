@@ -1,0 +1,30 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Environments
+.venv/
+venv/
+.nox/
+.tox/
+
+# Documentation build
+docs/_build/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+
+# Fitted models and outputs
+*.pt
+*.pth
