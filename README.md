@@ -1,17 +1,17 @@
 # scedyn
 
 `scedyn` implements the self-consistent estimator for dynamic survival
-prediction in paper _Dynamic prediction via self-consistent estimation_ (Du, Kim, Wang
-and Lu).
+prediction in paper _Dynamic prediction via self-consistent estimation_ (Du,
+Kim, Wang and Lu).
 
 The package contains
 
-| Module                | Content                                                                        |
-| --------------------- | ------------------------------------------------------------------------------ |
-| `scedyn.SCEDyn`       | the estimator: training, prediction and variable selection                     |
-| `scedyn.LandmarkData` | the data at one specific landmark                                 |
-| `scedyn.simulate`     | the data-generating processes of the paper (AFT, PH, PO) |
-| `scedyn.metrics`      | the metrics, including integrated Brier score (IPCW) and integrated mean squared error                |
+| Module                | Content                                                                                |
+| --------------------- | -------------------------------------------------------------------------------------- |
+| `scedyn.SCEDyn`       | the estimator: training, prediction and variable selection                             |
+| `scedyn.LandmarkData` | the data at one specific landmark                                                      |
+| `scedyn.simulate`     | the data-generating processes of the paper (AFT, PH, PO)                               |
+| `scedyn.metrics`      | the metrics, including integrated Brier score (IPCW) and integrated mean squared error |
 
 ## 1. Installation
 
@@ -25,7 +25,9 @@ available.
 
 ## 2. Analysing your own data
 
-The input data is the risk patients set at one landmark τ, and the outcome must the residual time $T-\tau$, and the longitudinal history must be the observation before τ. Fit one model per landmark.
+The input data is the risk set at one landmark τ, the outcome must be the
+residual time T − τ, and the longitudinal history must be the observations
+before τ. Fit one model per landmark.
 
 ```python
 import numpy as np
@@ -47,8 +49,8 @@ times = np.linspace(0.1, 10, 50)
 S = model.predict_survival(test, times)  # array (n_test, 50)
 ```
 
-The number of visits m_i may differ across subjects. Inputs are used as given here,
-so one may consider scaling them beforehand if needed.
+The number of visits m_i may differ across subjects. Inputs are used as given
+here, so one may consider scaling them beforehand if needed.
 
 **Variable selection.** With `variable_selection=True`, give either
 `lambda_grid`, candidate penalty levels among which the one with the best
@@ -64,8 +66,9 @@ print(model.selection_.lambda_value)  # the chosen level, reusable as lambda_val
 ```
 
 **Tuning.** Every constant of the method is an argument of `SCEDyn`, and the
-defaults are the values we used in simulation study (low censoring, landmark 0.9).
-See `help(SCEDyn)` or check the supplement material of the paper for the full list. The ones most often changed are
+defaults are the values we used in simulation study (low censoring, landmark
+0.9). See `help(SCEDyn)` or check the supplementary material of the paper for
+the full list. The ones most often changed are
 
 | Argument          | Default | Meaning                                          |
 | ----------------- | ------- | ------------------------------------------------ |
