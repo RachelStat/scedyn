@@ -1,32 +1,22 @@
 # scedyn
 
 `scedyn` implements the self-consistent estimator for dynamic survival
-prediction of _Dynamic prediction via self-consistent estimation_ (Du, Kim, Wang
-and Lu). At a landmark time τ it estimates, for every subject still at risk, the
-whole conditional residual survival curve
-
-S_τ(s | H) = P(T − τ > s | T > τ, X, Z(t), t ≤ τ)
-
-from baseline covariates X and the longitudinal history Z up to τ, without a
-model for the longitudinal process and without a parametric survival family. A
-residual-time generator and a weight network, each with an LSTM encoder of the
-history, are trained by a min–max problem built on the self-consistent equation,
-and optional stochastic gates select baseline and longitudinal variables.
+prediction in paper _Dynamic prediction via self-consistent estimation_ (Du, Kim, Wang
+and Lu).
 
 The package contains
 
 | Module                | Content                                                                        |
 | --------------------- | ------------------------------------------------------------------------------ |
 | `scedyn.SCEDyn`       | the estimator: training, prediction and variable selection                     |
-| `scedyn.LandmarkData` | the input format, the risk set at one landmark                                 |
-| `scedyn.simulate`     | the data-generating processes of the paper (AFT, PH, PO) and the oracle curves |
-| `scedyn.metrics`      | integrated Brier score (IPCW) and integrated mean squared error                |
+| `scedyn.LandmarkData` | the data at one specific landmark                                 |
+| `scedyn.simulate`     | the data-generating processes of the paper (AFT, PH, PO) |
+| `scedyn.metrics`      | the metrics, including integrated Brier score (IPCW) and integrated mean squared error                |
 
 ## 1. Installation
 
 ```bash
 pip install git+https://github.com/RachelStat/scedyn.git
-# or, from a local copy
 pip install .
 ```
 
@@ -35,9 +25,7 @@ available.
 
 ## 2. Analysing your own data
 
-The input is the risk set at one landmark τ, already processed: every subject
-has survived to τ, the outcome is the residual time after τ, and the
-longitudinal history is truncated at τ. Fit one model per landmark.
+The input data is the risk patients set at one landmark τ, and the outcome must the residual time $T-\tau$, and the longitudinal history must be the observation before τ. Fit one model per landmark.
 
 ```python
 import numpy as np
@@ -59,16 +47,16 @@ times = np.linspace(0.1, 10, 50)
 S = model.predict_survival(test, times)  # array (n_test, 50)
 ```
 
-The number of visits m_i may differ across subjects. Inputs are used as given,
-so scale them beforehand if their ranges differ widely.
+The number of visits m_i may differ across subjects. Inputs are used as given here,
+so one may consider scaling them beforehand if needed.
 
 **Variable selection.** With `variable_selection=True`, give either
 `lambda_grid`, candidate penalty levels among which the one with the best
 validation integrated Brier score is chosen, or `lambda_value`, a fixed penalty
-level on the same scale. The simulation study of the paper uses the grid 0.40,
-0.45, …, 0.70.
+level on the same scale.
 
 ```python
+# example
 grid = (0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70)
 model = SCEDyn(variable_selection=True, lambda_grid=grid, seed=1).fit(train, val)
 print(model.selected_variables_)  # {'baseline': [...], 'longitudinal': [...]}
@@ -76,8 +64,8 @@ print(model.selection_.lambda_value)  # the chosen level, reusable as lambda_val
 ```
 
 **Tuning.** Every constant of the method is an argument of `SCEDyn`, and the
-defaults are the values of the simulation study (low censoring, landmark 0.9).
-See `help(SCEDyn)` for the full list. The ones most often changed are
+defaults are the values we used in simulation study (low censoring, landmark 0.9).
+See `help(SCEDyn)` or check the supplement material of the paper for the full list. The ones most often changed are
 
 | Argument          | Default | Meaning                                          |
 | ----------------- | ------- | ------------------------------------------------ |
